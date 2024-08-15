@@ -1,0 +1,16 @@
+FROM node:lts
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install
+
+ENV MONGO_URI=
+ENV PORT=8000
+ENV JWT_ACCESS_TOKEN=
+ENV JWT_REFRESH_TOKEN=
+
+EXPOSE 8000
+
+CMD ["npm", "run", "start"]
