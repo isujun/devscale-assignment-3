@@ -1,39 +1,53 @@
 import { Request, Response } from "express";
-import { TodoService } from "../services/todo.service";
+import todoService from "../services/todo.service";
 
 export const TodoController = {
-  handleCreateTodo: async (req: Request, res: Response) => {
-    const { title, done, userId } = req.body;
-
-    await TodoService.createTodo({ title, done, userId });
-    return res.status(201).json({ message: "create todo success" });
-  },
-
   handleGetAllTodos: async (req: Request, res: Response) => {
-    const allTodos = await TodoService.getAlltodos();
+    const allTodos = await todoService.getAllTodos();
 
-    return res.status(200).json({ message: "all todos", body: allTodos });
+    return res.status(200).json({ message: "get all todos", body: allTodos });
   },
 
   handleGetOneTodo: async (req: Request, res: Response) => {
-    const { todoId } = req.body;
-    const getOneTodo = await TodoService.getOnetodo(todoId);
+    const todoId = req.params.id;
+    const getOneTodo = await todoService.getOneTodo(todoId);
+
+    if (!getOneTodo) return res.status(404).json({ message: "Todo not found" });
 
     return res.status(200).json({ message: "get todo", body: getOneTodo });
   },
 
-  handleUpdateTodo: async (req: Request, res: Response) => {
-    const { title, done, userId } = req.body;
-    const todoId = req.params.id;
+  handleCreateTodo: async (req: Request, res: Response) => {
+    try {
+      const { userId, todo, done } = req.body;
 
-    await TodoService.updateTodo(todoId, { title, done, userId });
-    return res.status(201).json({ message: "you are updating todo now" });
+      await todoService.createTodo({ userId, todo, done });
+      return res.status(201).json({ message: "create todo success", data: { todo, done } });
+    } catch (error) {
+      return res.status(401).json({ message: error });
+    }
   },
 
-  handleDelete: async (req: Request, res: Response) => {
-    const todoId = req.body;
+  handleUpdateTodo: async (req: Request, res: Response) => {
+    try {
+      const todoId = req.params.id;
 
-    await TodoService.deleteTodo(todoId);
-    return res.status(200).json({ message: "delete success!" });
+      const todo = await todoService.updateTodo(todoId, req.body);
+      if (!todo) return res.status(404).json({ message: "Todo not found" });
+      res.json(todo);
+    } catch (error) {
+      return res.status(400).json({ message: error });
+    }
+  },
+
+  handleDeleteTodo: async (req: Request, res: Response) => {
+    try {
+      const todoId = req.params.id;
+
+      await todoService.deleteTodo(todoId);
+      return res.status(200).json({ message: "delete success!" });
+    } catch (error) {
+      console.log(error);
+    }
   },
 };

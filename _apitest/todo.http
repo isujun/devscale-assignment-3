@@ -1,1 +1,28 @@
-GET http://
+### get all
+GET http://localhost:8000/todos
+
+### get one
+GET http://localhost:8000/todos/66c36d2fee5f9e6b6d0589c4
+
+### create
+POST http://localhost:8000/todos
+Content-Type: application/json
+
+{
+    "userId": "66be23005c2cb8e6c9c4702c",
+    "todo": "tidur lah",
+    "done": "no"
+}
+
+### update 
+PATCH http://localhost:8000/todos/
+Content-Type: application/json
+
+{
+    "userId": "",
+    "todo": "",
+    "done": 
+}
+
+### delete
+DELETE http://localhost:8000/todos/66c36d2fee5f9e6b6d0589c4

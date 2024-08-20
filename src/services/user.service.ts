@@ -1,16 +1,24 @@
 import { Auth } from "../entities/auth.schema";
-import { User } from "../entities/user.schema";
+// import { User } from "../entities/user.schema";
 import { ResponseError } from "../errors/response.error";
-import { IUser } from "../models/user.model";
-import { loginUserRequest, loginUserResponse } from "../models/user.model";
+// import { IUser } from "../models/user.model";
+import { IUser, Ilogin } from "../models/user.interface";
 import userRepository from "../repositories/user.repository";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+// import jwt from "jsonwebtoken";
+
+// class UserService {
+//   private static generateTokens(payload: object): { accessToken: string; refreshToken: string } {
+//     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "2m" });
+//     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET as string, { expiresIn: "1d" });
+//     return { accessToken, refreshToken };
+//   }
+// }
 
 const userService = {
   getAll: async () => {
     try {
-      const allUsers = await userRepository.getUser();
+      const allUsers = await userRepository.getAllUser();
       return allUsers;
     } catch (error) {
       console.log("user service error");
@@ -25,7 +33,7 @@ const userService = {
       console.log("user service error");
     }
   },
-  createUser: async (userPayload: IUser) => {
+  register: async (userPayload: IUser) => {
     try {
       const { name, email, password } = userPayload;
 
@@ -36,7 +44,7 @@ const userService = {
         throw new ResponseError(400, "email should be valid and pasword should min 6 characters");
       }
       const hashPassword = await bcrypt.hash(password, 10);
-      const createUser = await userRepository.createUser({
+      const createUser = await userRepository.registerUser({
         name,
         email,
         password: hashPassword,
@@ -62,45 +70,55 @@ const userService = {
       console.log("user service error");
     }
   },
-  loginUser: async (userPayLoad: loginUserRequest): Promise<loginUserResponse> => {
+  loginUser: async (userData: Ilogin) => {
     try {
-      const { email, password } = userPayLoad;
-      const user = await User.findOne({ email });
+      const { email, password } = userData;
+      const login = await userRepository.loginUser(userData);
 
-      // if user not exist
-      if (!user) throw new ResponseError(400, "user not found");
-
-      // password validation
-      const isMatch = await bcrypt.compare(password, user?.password as string);
-
-      // password invalidation
-      if (!isMatch) throw new ResponseError(400, "password invalid");
-
-      // authorization
-      const payload = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      };
-
-      const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: 120 });
-      const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET as string, { expiresIn: "1d" });
-
-      // TODO: save refresh token to database
-      const newRefreshToken = new Auth({ userId: user.id, refreshToken });
-      await newRefreshToken.save();
-
-      return { accessToken, refreshToken };
+      return login;
     } catch (error) {
-      console.log("user service error");
-      throw new ResponseError(400, "login failed");
+      console.log("login service error");
+      throw new ResponseError(400, "user not found");
     }
+    // try {
+    //   const { email, password } = userData;
+
+    //   // find user
+    //   const user = await userRepository.loginUser(userData);
+    //   // if user not exist
+    //   if (!user) throw new ResponseError(400, "user not found");
+
+    //   // password validation
+    //   const isPasswordMatch = await bcrypt.compare(password, user?.password as string);
+
+    //   // password invalidation
+    //   if (!isPasswordMatch) throw new ResponseError(400, "password invalid");
+
+    //   // authorization
+    //   const payload = {
+    //     id: user.id,
+    //     name: user.name,
+    //     email: user.email,
+    //   };
+
+    //   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: 200 });
+    //   const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET as string, { expiresIn: "1d" });
+
+    //   // TODO: save refresh token to database
+    //   const newRefreshToken = new Auth({ userId: user.id, refreshToken });
+    //   await newRefreshToken.save();
+
+    //   return { accessToken, refreshToken };
+    // } catch (error) {
+    //   console.log("login user service error");
+    //   throw new ResponseError(400, "login failed");
+    // }
   },
 
   logoutUser: async (refreshToken: string) => {
     // delete refresh token from database
     try {
-      const deleteRefreshToken = await Auth.findOneAndDelete({ refreshToken });
+      const deleteRefreshToken = await userRepository.logoutUser(refreshToken);
       return deleteRefreshToken;
     } catch (error) {
       console.log("user service error");

@@ -1,10 +1,11 @@
 import { User } from "../entities/user.schema";
 import { Auth } from "../entities/auth.schema";
-import { IUser } from "../models/user.model";
-import { loginUserRequest } from "../models/user.model";
+import { IUser, Ilogin } from "../models/user.interface";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const userRepository = {
-  getUser: async () => {
+  getAllUser: async () => {
     try {
       const allUser = await User.find();
       return allUser;
@@ -23,7 +24,7 @@ const userRepository = {
     }
   },
 
-  createUser: async (userPayload: IUser) => {
+  registerUser: async (userPayload: IUser) => {
     try {
       const createUser = new User(userPayload);
       await createUser.save();
@@ -48,22 +49,51 @@ const userRepository = {
     }
   },
 
-  loginUser: async (userPayload: loginUserRequest) => {
+  loginUser: async (userData: Ilogin) => {
     try {
-      const { email, password } = userPayload;
-      const loginUser = await User.findOne({ email });
-      return loginUser;
+      const { email, password } = userData;
+
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const isPasswordMatch = await bcrypt.compare(password, user.password as string);
+      if (!isPasswordMatch) {
+        throw new Error("Invalid password");
+      }
+
+      // authorization
+      const payload = {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      };
+
+      const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN as string, { expiresIn: 200 });
+      const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN as string, { expiresIn: "1d" });
+
+      const newRefreshToken = new Auth({ userId: user._id, refreshToken });
+
+      await newRefreshToken.save();
+      return { accessToken, refreshToken };
     } catch (error) {
       console.log(error);
+      throw new Error("Login failed");
     }
+    //   const { email, password } = userData;
+    //   const loginUser = await User.findOne({ email });
+    //   return loginUser;
+    // } catch (error) {
+    //   console.log(error);
   },
 
   logoutUser: async (refreshToken: string) => {
     try {
-      const logoutUser = await Auth.findOneAndDelete({ refreshToken });
-      return logoutUser;
+      const deleteRefreshToken = await Auth.findOneAndDelete({ refreshToken });
+      return deleteRefreshToken;
     } catch (error) {
-      console.log(error);
+      throw new Error("Logout failed");
     }
   },
 };

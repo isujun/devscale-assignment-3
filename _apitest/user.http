@@ -1,6 +1,10 @@
+### get all
 GET http://localhost:8000/users
 
-### user register
+### get single
+GET http://localhost:8000/users/66b9bd83fd61a9da3436e9fe
+
+### register
 POST http://localhost:8000/users/register
 Content-Type: application/json
 
@@ -9,7 +13,8 @@ Content-Type: application/json
   "email": "dora@mail.com",
   "password": "iyainaja123"
 }
-### login user
+
+### login 
 POST http://localhost:8000/users/login
 Content-Type: application/json
 
@@ -17,3 +22,9 @@ Content-Type: application/json
   "email": "dora@mail.com",
   "password": "iyainaja123"
 }
+
+### logout
+POST  http://localhost:8000/users/logout
+
+### delete 
+ DELETE http://localhost:8000/users/66b9bd83fd61a9da3436e9fe
