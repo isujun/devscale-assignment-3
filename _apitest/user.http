@@ -1,11 +1,14 @@
 ### get all
-GET http://localhost:8000/users
+GET http://localhost:8000/api/v1/users
+
+### get all from vps
+GET http://103.49.239.203:8000/api/v1/users
 
 ### get single
-GET http://localhost:8000/users/66b9bd83fd61a9da3436e9fe
+GET http://localhost:8000/api/v1/users/66b9bd83fd61a9da3436e9fe
 
 ### register
-POST http://localhost:8000/users/register
+POST http://localhost:8000/api/v1/users/register
 Content-Type: application/json
 
 {
@@ -15,7 +18,16 @@ Content-Type: application/json
 }
 
 ### login 
-POST http://localhost:8000/users/login
+POST http://localhost:8000/api/v1/users/login
+Content-Type: application/json
+
+{
+  "email": "dora@mail.com",
+  "password": "iyainaja123"
+}
+
+### login vps
+GET http://103.49.239.203:8000/api/v1/users/login
 Content-Type: application/json
 
 {
@@ -24,7 +36,7 @@ Content-Type: application/json
 }
 
 ### logout
-POST  http://localhost:8000/users/logout
+POST  http://localhost:8000/api/v1/users/logout
 
 ### delete 
- DELETE http://localhost:8000/users/66b9bd83fd61a9da3436e9fe
+ DELETE http://localhost:8000/api/v1/users/66b9bd83fd61a9da3436e9fe
