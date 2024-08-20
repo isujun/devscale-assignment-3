@@ -6,7 +6,7 @@ import todoRouter from "./routes/todo.route";
 import { connectDB } from "./config/database";
 
 dotenv.config();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT;
 
 // mongoose
 //   .connect(process.env.MONGO_URI as string)
@@ -14,13 +14,12 @@ const PORT = process.env.PORT || 8000;
 //   .catch(() => console.log("mongodb connection failed"));
 const app = express();
 
-connectDB();
-
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("api/v1/users", userRouter);
-app.use("api/v1/todos", todoRouter);
+connectDB();
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/todos", todoRouter);
 
 app.listen(PORT, async () => {
   console.log(`App is listening on http://localhost:${PORT}`);
