@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { Auth } from "../entities/auth.schema";
 
-export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const { accessToken, refreshToken } = req.cookies;
 
   if (!accessToken || !refreshToken) {
@@ -55,4 +55,4 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     }
   }
   next();
-};
+}
